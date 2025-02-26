@@ -3,7 +3,7 @@ import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 
-const API_URL = `https://to-do-backend-kohl.vercel.app/tasks?email=mumu15-4398@diu.edu.bd
+const API_URL = `http://localhost:5000/tasks?email=mumu15-4398@diu.edu.bd
 `;
 const categories = ["To-Do", "In Progress", "Done"];
 
@@ -11,7 +11,7 @@ const TaskBoard = () => {
   const queryClient = useQueryClient();
 
   // Fetch tasks
-  const { data: tasks = [], isLoading } = useQuery({
+  const { data: tasks = [], isLoading,refetch } = useQuery({
     queryKey: ["tasks"],
     queryFn: async () => {
       const res = await axios.get(API_URL);
@@ -30,28 +30,53 @@ const TaskBoard = () => {
   // Handle drag and drop
   const onDragEnd = async (result) => {
     if (!result.destination) return; // If dropped outside, ignore
-
+  
+    console.log("Drag result:", result);
+  
+    // Create a copy of the task list to avoid mutation
     const updatedTasks = [...taskList];
-    const movedTaskIndex = result.source.index;
-    const [movedTask] = updatedTasks.splice(movedTaskIndex, 1);
-
-    if (!movedTask) return; // Ensure task exists
-
+    console.log("Tasks before move:", updatedTasks);
+  
+    // Find the moved task by draggableId
+    const movedTaskIndex = updatedTasks.findIndex(
+      (task) => task._id === result.draggableId
+    );
+    const movedTask = updatedTasks[movedTaskIndex];
+  
+    console.log("Moved task:", movedTask);
+  
+    if (!movedTask) return;
+  
+    // Update the category of the moved task based on the droppableId
     movedTask.category = categories[result.destination.droppableId];
-
+    console.log("Updated moved task category:", movedTask.category);
+  
+    // Remove the task from its old position
+    updatedTasks.splice(movedTaskIndex, 1);
+  
+    // Insert the moved task into the new position
     updatedTasks.splice(result.destination.index, 0, movedTask);
-    setTaskList(updatedTasks); // Update UI instantly
-
-    // Update task in MongoDB
+  
+    console.log("Tasks after move:", updatedTasks);
+  
+    // Set the state with the updated task list (ensuring no direct mutation)
+    setTaskList(updatedTasks); // Ensure state is updated with a new array reference
+  
+    // Update the task in MongoDB
     try {
-      await axios.patch(`${API_URL}/${movedTask._id}`, {
+      await axios.patch(`http://localhost:5000/task/${movedTask._id}`, {
         category: movedTask.category,
       });
-      queryClient.invalidateQueries(["tasks"]); // Refetch tasks from MongoDB
+      console.log("Task updated successfully in MongoDB");
     } catch (error) {
       console.error("Failed to update task:", error);
     }
   };
+  
+  
+  
+  
+  
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>
