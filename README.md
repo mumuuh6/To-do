@@ -23,11 +23,3 @@ Check out the live version of the app here: [imminent-paint.surge.sh](https://im
   - Mongoose (MongoDB object modeling)
 
 ---
-
-## Installation Steps
-
-### 1. Clone the Repository
-
-```bash
-git clone <repo_url>
-cd task-management-app
