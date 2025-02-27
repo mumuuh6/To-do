@@ -6,6 +6,8 @@ import App from "../App";
 import Dashboard from "../pages/dashboard";
 import TaskCard from "../componants/TaskCard";
 import Home from "../componants/Home";
+import Privateroute from "../Privateroute";
+import TaskBoard from "../componants/TaskBoard";
 
  const router = createBrowserRouter([
     {
@@ -18,7 +20,11 @@ import Home from "../componants/Home";
         },
         {
           path: "/tasks",
-          element: <TaskCard></TaskCard>,
+          element: <Privateroute><TaskCard></TaskCard></Privateroute>,
+        },
+        {
+          path: "/seetasks",
+          element: <TaskBoard></TaskBoard>,
         },
       ]
     },

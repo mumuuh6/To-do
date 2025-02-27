@@ -1,21 +1,32 @@
 import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../pages/Authprovider';
+import axios from 'axios';
 
 const Navbar = () => {
-    const { user, logout,googlesignin } = useContext(AuthContext);
-    const login=()=>{
+    const { user, logout, googlesignin } = useContext(AuthContext);
+    
+    const login = () => {
         googlesignin()
-        .then(res=>console.log(res))
+            .then(res => {
+                const userInfo = {
+                    email: res.user?.email,
+                    displayName: res.user?.displayName,
+                    photoURL: res.user?.photoURL,
+                }
+                axios.post('https://to-do-backend-kohl.vercel.app/user', userInfo)
+                .then(pos => console.log('k'))
+            })
+            .catch(err=>console.log(err))
     }
-    const signout=()=>{
+    const signout = () => {
         logout()
-        .then(res=>console.log("siggned out"))
+            .then(res => console.log("siggned out"))
     }
     const Links = (
         <>
-            <li><Link to={`tasks`}>Add Task</Link></li>
-            <li><Link to={`/`}>See Tasks</Link></li>
+            {user&& <li><Link to={`tasks`}>Add Task</Link></li>}
+            <li><Link to={`/seetasks`}>See Tasks</Link></li>
         </>
     );
     console.log(user)
@@ -43,7 +54,7 @@ const Navbar = () => {
                         {Links}
                     </ul>
                 </div>
-                <a className="btn btn-ghost text-xl">daisyUI</a>
+                <a className="btn btn-ghost text-xl">To-Do</a>
             </div>
             <div className="navbar-center hidden lg:flex">
                 <ul className="menu menu-horizontal px-1">
@@ -55,11 +66,11 @@ const Navbar = () => {
                     <button onClick={login} className="btn btn-primary">Login</button>
                 ) : (
                     <>
-                        <span className="mr-4">{user?.displayName}</span>
-                        <img 
-                            src={user?.photoURL} 
-                            alt="User Avatar" 
-                            className="h-8 w-8 rounded-full mr-4" 
+                        <span className="mr-4 hidden md:block">{user?.displayName}</span>
+                        <img
+                            src={user?.photoURL}
+                            alt="User Avatar"
+                            className="h-8 w-8 rounded-full mr-4"
                         />
                         <button onClick={signout} className="btn btn-secondary">Logout</button>
                     </>
