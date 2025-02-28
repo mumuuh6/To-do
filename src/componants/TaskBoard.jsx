@@ -7,24 +7,29 @@ import { Link } from "react-router-dom";
 
 const TaskBoard = () => {
   const { user } = useContext(AuthContext);
+  console.log('lili',user?.email)
   const API_URL = `https://to-do-backend-kohl.vercel.app/tasks?email=${user?.email}`;
   const categories = ["To-Do", "In Progress", "Done"];
 
+  
   const { data: tasks = [], isLoading, refetch } = useQuery({
     queryKey: ["tasks"],
     queryFn: async () => {
       const res = await axios.get(API_URL);
+      
       return res.data;
     },
     staleTime: 0,
   })
   console.log(tasks)
-  const [taskList, setTaskList] = useState(tasks);
+ const [taskList, setTaskList] = useState(tasks);
   const [editingTask, setEditingTask] = useState(null);
-
+  
   useEffect(() => {
     setTaskList(tasks);
-  }, [tasks]);
+    refetch()
+  }, [tasks,user]);
+  
   console.log(taskList)
   const isOverdue = (timestamp) => {
     const currentDate = new Date();
@@ -114,7 +119,7 @@ const TaskBoard = () => {
     }
   };
   if(isLoading){
-    return <p>Please wait</p>
+    return <p className="loading">Please wait</p>
   }
   return (
     <DragDropContext onDragEnd={onDragEnd}>
@@ -128,7 +133,9 @@ const TaskBoard = () => {
                 className="bg-gray-100 p-4 rounded shadow-md min-h-[200px]"
               >
                 <h2 className="text-lg font-semibold mb-2">{category}</h2>
-                {taskList.length==0 && user && <p className="text-red-400 font-bold text-2xl md:text-4xl">Please Add Task First</p>}
+                
+                {taskList?.length==0 && <p className="text-red-400 font-bold text-2xl md:text-4xl">Please Add Task First</p>}
+                
                 {taskList
                   .filter((task) => task.category === category)
                   .map((task, taskIndex) => (
@@ -138,9 +145,13 @@ const TaskBoard = () => {
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}
-                          className="min-h-[100px] bg-white p-2 rounded shadow mb-2 flex justify-between"
+                          className="min-h-[100px] bg-white p-2 rounded shadow mb-2 "
                         >
+                          
+                         {user && 
+                         <div className="flex justify-between">
                           <div>
+                            
                             <p className="text-lg font-bold">Task Name:<span className=" font-normal">{task.title}</span></p>
                             <p className="text-lg font-bold">Description:<span className="font-normal">{task.description}</span></p>
                             <p className="text-lg font-bold"
@@ -163,6 +174,7 @@ const TaskBoard = () => {
                             <button className="btn btn-outline btn-primary" onClick={() => handleUpdateClick(task)}>Update</button>
                             <button className="btn btn-outline btn-primary" onClick={() => handleDelete(task._id)}>Delete</button>
                           </div>
+                          </div>}
                         </div>
                       )}
                     </Draggable>
